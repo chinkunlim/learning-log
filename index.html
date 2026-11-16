@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我的學習紀錄</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <p class="eyebrow">LEARNING LOG</p>
+      <h1>我的學習紀錄</h1>
+      <p class="subtitle">登入後記錄每天學了什麼，每個人只看得到自己的資料。</p>
+    </header>
+
+    <section id="status-banner" class="banner hidden" role="status" aria-live="polite"></section>
+
+    <!-- 未登入：登入 / 註冊卡片 -->
+    <section id="auth-section" class="card">
+      <div class="auth-tabs" role="tablist" aria-label="帳號切換">
+        <button id="tab-login" class="tab-btn active" type="button" role="tab" aria-selected="true">登入</button>
+        <button id="tab-signup" class="tab-btn" type="button" role="tab" aria-selected="false">第一次來：註冊</button>
+      </div>
+
+      <form id="auth-form" class="stack-form">
+        <div class="field">
+          <label for="auth-email">Email</label>
+          <input id="auth-email" type="email" autocomplete="email" placeholder="name@example.com" required>
+        </div>
+
+        <div class="field">
+          <label for="auth-password">密碼（至少 6 碼，請用練習用密碼）</label>
+          <input id="auth-password" type="password" autocomplete="current-password" minlength="6" placeholder="請輸入密碼" required>
+        </div>
+
+        <button id="auth-submit-btn" class="btn btn-primary" type="submit">登入</button>
+      </form>
+    </section>
+
+    <!-- 已登入：使用者列 + 新增表單 + 紀錄清單 -->
+    <section id="app-section" class="hidden">
+      <div class="card user-bar">
+        <div class="user-info">
+          <span class="user-label">目前已登入</span>
+          <strong id="user-email-display"></strong>
+        </div>
+        <button id="logout-btn" class="btn btn-secondary" type="button">登出</button>
+      </div>
+
+      <section class="card">
+        <h2>新增學習紀錄</h2>
+        <form id="log-form" class="stack-form">
+          <div class="row-two">
+            <div class="field">
+              <label for="log-date">日期</label>
+              <input id="log-date" type="date" required>
+            </div>
+            <div class="field">
+              <label for="log-minutes">花了幾分鐘（可不填）</label>
+              <input id="log-minutes" type="number" min="0" max="1440" inputmode="numeric" placeholder="例如 45">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="log-topic">今天學了什麼</label>
+            <input id="log-topic" type="text" maxlength="200" placeholder="例如：學會 Supabase RLS 門禁設定" required>
+          </div>
+
+          <div class="field">
+            <label for="log-note">卡在哪裡（可不填）</label>
+            <textarea id="log-note" rows="3" maxlength="1000" placeholder="記錄遇到的問題或待解決的疑問"></textarea>
+          </div>
+
+          <button id="save-log-btn" class="btn btn-primary" type="submit">儲存紀錄</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="list-header">
+          <h2>我的紀錄清單</h2>
+          <span id="log-count" class="badge">0 筆</span>
+        </div>
+        <div id="log-list" class="log-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
