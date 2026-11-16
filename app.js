@@ -22,6 +22,7 @@
 
   const logList = document.getElementById("log-list");
   const logCount = document.getElementById("log-count");
+  const weeklySummary = document.getElementById("weekly-summary");
 
   let authMode = "login"; // "login" | "signup"
   let supabaseClient = null;
@@ -106,10 +107,36 @@
     return { url, key };
   }
 
+  function formatLocalDate(date) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function updateWeeklySummary(items) {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+    const todayStr = formatLocalDate(today);
+    const startStr = formatLocalDate(start);
+
+    let totalMinutes = 0;
+    let count = 0;
+    items.forEach((row) => {
+      if (row.log_date && row.log_date >= startStr && row.log_date <= todayStr) {
+        count += 1;
+        totalMinutes += Number(row.minutes) || 0;
+      }
+    });
+
+    weeklySummary.textContent = `最近 7 天：共 ${totalMinutes} 分鐘、${count} 筆`;
+  }
+
   function renderLogs(rows) {
     logList.textContent = "";
     const items = Array.isArray(rows) ? rows : [];
     logCount.textContent = `${items.length} 筆`;
+    updateWeeklySummary(items);
 
     if (items.length === 0) {
       const empty = document.createElement("p");
