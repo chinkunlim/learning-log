@@ -5,10 +5,18 @@
 
   const tabLogin = document.getElementById("tab-login");
   const tabSignup = document.getElementById("tab-signup");
+  const tabForgot = document.getElementById("tab-forgot");
   const authForm = document.getElementById("auth-form");
   const authEmail = document.getElementById("auth-email");
+  const passwordField = document.getElementById("password-field");
   const authPassword = document.getElementById("auth-password");
   const authSubmitBtn = document.getElementById("auth-submit-btn");
+
+  const resetPasswordSection = document.getElementById("reset-password-section");
+  const resetPasswordForm = document.getElementById("reset-password-form");
+  const newPasswordInput = document.getElementById("new-password");
+  const confirmPasswordInput = document.getElementById("confirm-password");
+  const resetPasswordBtn = document.getElementById("reset-password-btn");
 
   const userEmailDisplay = document.getElementById("user-email-display");
   const logoutBtn = document.getElementById("logout-btn");
@@ -24,7 +32,8 @@
   const logCount = document.getElementById("log-count");
   const weeklySummary = document.getElementById("weekly-summary");
 
-  let authMode = "login"; // "login" | "signup"
+  let authMode = "login"; // "login" | "signup" | "forgot"
+  let isPasswordRecovery = false;
   let supabaseClient = null;
   let currentUser = null;
 
@@ -49,12 +58,27 @@
   function setAuthMode(mode) {
     authMode = mode;
     const isLogin = mode === "login";
+    const isSignup = mode === "signup";
+    const isForgot = mode === "forgot";
+
     tabLogin.classList.toggle("active", isLogin);
-    tabSignup.classList.toggle("active", !isLogin);
+    tabSignup.classList.toggle("active", isSignup);
+    tabForgot.classList.toggle("active", isForgot);
     tabLogin.setAttribute("aria-selected", String(isLogin));
-    tabSignup.setAttribute("aria-selected", String(!isLogin));
+    tabSignup.setAttribute("aria-selected", String(isSignup));
+    tabForgot.setAttribute("aria-selected", String(isForgot));
+
+    passwordField.classList.toggle("hidden", isForgot);
+    authPassword.required = !isForgot;
     authPassword.autocomplete = isLogin ? "current-password" : "new-password";
-    authSubmitBtn.textContent = isLogin ? "登入" : "註冊並登入";
+
+    if (isLogin) {
+      authSubmitBtn.textContent = "登入";
+    } else if (isSignup) {
+      authSubmitBtn.textContent = "註冊並登入";
+    } else {
+      authSubmitBtn.textContent = "寄送重設密碼信";
+    }
     clearBanner();
   }
 
@@ -219,6 +243,14 @@
 
   function updateUIForSession(session) {
     currentUser = session && session.user ? session.user : null;
+    if (isPasswordRecovery && currentUser) {
+      authSection.classList.add("hidden");
+      appSection.classList.add("hidden");
+      resetPasswordSection.classList.remove("hidden");
+      return;
+    }
+
+    resetPasswordSection.classList.add("hidden");
     if (currentUser) {
       authSection.classList.add("hidden");
       appSection.classList.remove("hidden");
@@ -234,6 +266,7 @@
 
   tabLogin.addEventListener("click", () => setAuthMode("login"));
   tabSignup.addEventListener("click", () => setAuthMode("signup"));
+  tabForgot.addEventListener("click", () => setAuthMode("forgot"));
 
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -241,12 +274,24 @@
 
     const email = authEmail.value.trim();
     const password = authPassword.value;
-    if (!email || !password) return;
+    if (!email) return;
+    if (authMode !== "forgot" && !password) return;
 
     authSubmitBtn.disabled = true;
     clearBanner();
 
     try {
+      if (authMode === "forgot") {
+        const redirectTo = window.location.origin + window.location.pathname;
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) {
+          showBanner("error", translateError(error));
+          return;
+        }
+        showBanner("info", "已寄出重設密碼信！請到信箱點擊重設連結，回來後即可設定新密碼。");
+        return;
+      }
+
       const action = authMode === "login"
         ? supabaseClient.auth.signInWithPassword({ email, password })
         : supabaseClient.auth.signUp({ email, password });
@@ -266,6 +311,44 @@
       showBanner("info", authMode === "login" ? "登入成功！" : "註冊並登入成功！");
     } finally {
       authSubmitBtn.disabled = false;
+    }
+  });
+
+  resetPasswordForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!supabaseClient) return;
+
+    const newPassword = newPasswordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+    if (newPassword.length < 6) {
+      showBanner("warn", "新密碼至少需要 6 碼。");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showBanner("warn", "兩次輸入的新密碼不一致，請重新確認。");
+      return;
+    }
+
+    resetPasswordBtn.disabled = true;
+    clearBanner();
+
+    try {
+      const { data, error } = await supabaseClient.auth.updateUser({ password: newPassword });
+      if (error) {
+        showBanner("error", translateError(error));
+        return;
+      }
+
+      isPasswordRecovery = false;
+      newPasswordInput.value = "";
+      confirmPasswordInput.value = "";
+      if (window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+      updateUIForSession(data && data.user ? { user: data.user } : null);
+      showBanner("info", "密碼已更新完成！");
+    } finally {
+      resetPasswordBtn.disabled = false;
     }
   });
 
@@ -339,6 +422,10 @@
 
     supabaseClient = window.supabase.createClient(valid.url, valid.key);
 
+    if (window.location.hash.includes("type=recovery")) {
+      isPasswordRecovery = true;
+    }
+
     const { data, error } = await supabaseClient.auth.getSession();
     if (error) {
       showBanner("error", translateError(error));
@@ -346,7 +433,10 @@
       updateUIForSession(data.session);
     }
 
-    supabaseClient.auth.onAuthStateChange((_event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        isPasswordRecovery = true;
+      }
       updateUIForSession(session);
     });
   }
