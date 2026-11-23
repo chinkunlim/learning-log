@@ -38,11 +38,9 @@
   let currentUser = null;
 
   function setDefaultDate() {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    logDate.value = `${yyyy}-${mm}-${dd}`;
+    const todayStr = formatLocalDate(new Date());
+    logDate.max = todayStr;
+    logDate.value = todayStr;
   }
 
   function showBanner(type, message) {
@@ -373,6 +371,12 @@
     const note = logNote.value.trim();
     const minutesRaw = logMinutes.value.trim();
     const minutes = minutesRaw === "" ? null : Number(minutesRaw);
+
+    const todayStr = formatLocalDate(new Date());
+    if (!logDate.value || logDate.value > todayStr) {
+      showBanner("warn", "日期不能選擇未來的日期。");
+      return;
+    }
 
     if (!topic) {
       showBanner("warn", "請填寫「今天學了什麼」。");
