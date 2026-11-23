@@ -6,7 +6,8 @@ W11 課程實作專案：使用純 HTML / CSS / JavaScript 搭配 Supabase（Aut
 
 - `index.html`：網站主頁面（繁體中文、手機友善排版，透過 CDN 載入 `@supabase/supabase-js` v2）。
 - `style.css`：頁面樣式表，提供響應式卡片排版與表單樣式。
-- `app.js`：前端邏輯，負責登入/註冊/登出、新增/查詢/刪除學習紀錄，並以 `textContent` 安全顯示使用者輸入的純文字。
+- `app.js`：前端邏輯，負責登入/註冊/忘記與重設密碼/登出、新增/查詢/刪除學習紀錄，並以 `textContent` 安全顯示使用者輸入的純文字。
+- `recent7.js`：計算最近 7 天學習統計（總分鐘數、筆數、有紀錄天數）的純函式模組。
 - `config.js`：存放公開的 Supabase `Project URL` 與 `publishable key`（請勿放入任何私密金鑰）。
 - `schema.sql`：在 Supabase SQL Editor 執行的資料庫腳本，建立 `learning_logs` 資料表、開啟 RLS 門禁並設定僅限本人讀寫刪的規則。
 - `README.md`：專案說明文件。
@@ -17,4 +18,13 @@ W11 課程實作專案：使用純 HTML / CSS / JavaScript 搭配 Supabase（Aut
 2. 到 Supabase 左側 **SQL Editor**，貼上 `schema.sql` 全文並按 **Run**。
 3. 複製專案的 **Project URL** 與 **Publishable key**，填入 `config.js`。
 4. 到 Supabase 左側 **Authentication → Sign In / Providers**，關閉 **Confirm email** 並按 **Save changes**。
-5. 使用本機靜態伺服器（例如 `python3 -m http.server 8000`）預覽測試後，再推上 GitHub 並連結 Cloudflare 上線。
+5. 若要使用「忘記密碼」寄信重設功能，請到 Supabase 左側 **Authentication → URL Configuration**：
+   - **Site URL** 填入：`https://learning-log.projectsynapse.workers.dev`
+   - **Redirect URLs** 加入：`https://learning-log.projectsynapse.workers.dev/**`
+6. 使用本機靜態伺服器（例如 `python3 -m http.server 8000`）預覽測試後，再推上 GitHub 並連結 Cloudflare 上線。
+
+## 忘記密碼與重設密碼說明
+
+1. 在登入區塊切換到 **「忘記密碼」** 分頁，輸入註冊時的 Email 後按「寄送重設密碼信」。
+2. 到信箱點擊重設連結導回網站後，系統會偵測 `PASSWORD_RECOVERY` 事件並顯示 **「設定新密碼」** 表單。
+3. 輸入並確認新密碼（至少 6 碼）後按「更新密碼」，即可完成重設並自動登入。
