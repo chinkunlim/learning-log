@@ -7,7 +7,7 @@ W11 課程實作專案：使用純 HTML / CSS / JavaScript 搭配 Supabase（Aut
 - `index.html`：網站主頁面（繁體中文、手機友善排版，透過 CDN 載入 `@supabase/supabase-js` v2）。
 - `style.css`：頁面樣式表，提供響應式卡片排版與表單樣式。
 - `app.js`：前端邏輯，負責登入/註冊/忘記與重設密碼/登出、新增/查詢/刪除學習紀錄，並以 `textContent` 安全顯示使用者輸入的純文字。
-- `recent7.js`：計算最近 7 天學習統計（總分鐘數、筆數、有紀錄天數）的純函式模組。
+- `recent7.js`：計算最近 7 天學習統計（總分鐘數、筆數、有紀錄天數）的純函式模組，整合自 W12 `recent7` 作業（`https://github.com/chinkunlim/recent7`）。
 - `config.js`：存放公開的 Supabase `Project URL` 與 `publishable key`（請勿放入任何私密金鑰）。
 - `schema.sql`：在 Supabase SQL Editor 執行的資料庫腳本，建立 `learning_logs` 資料表、開啟 RLS 門禁並設定僅限本人讀寫刪的規則。
 - `README.md`：專案說明文件。
