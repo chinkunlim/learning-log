@@ -23,6 +23,11 @@ W11 課程實作專案：使用純 HTML / CSS / JavaScript 搭配 Supabase（Aut
    - **Redirect URLs** 加入：`https://learning-log.projectsynapse.workers.dev/**`
 6. 使用本機靜態伺服器（例如 `python3 -m http.server 8000`）預覽測試後，再推上 GitHub 並連結 Cloudflare 上線。
 
+## 功能與規則說明
+
+- **最近 7 天統計（`recent7.js`）**：計算含今天往回算 7 天內的總分鐘數、筆數與有紀錄天數（`minutes` 為 `null` 仍計 1 筆、0 分鐘；未來日期不計入）。
+- **禁止輸入未來日期**：新增紀錄時，`#log-date` 日期上限設為當天，送出前若日期晚於今天會顯示警告並攔截。
+
 ## 忘記密碼與重設密碼說明
 
 1. 在登入區塊切換到 **「忘記密碼」** 分頁，輸入註冊時的 Email 後按「寄送重設密碼信」。
