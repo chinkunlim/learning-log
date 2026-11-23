@@ -115,21 +115,9 @@
   }
 
   function updateWeeklySummary(items) {
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
-    const todayStr = formatLocalDate(today);
-    const startStr = formatLocalDate(start);
-
-    let totalMinutes = 0;
-    let count = 0;
-    items.forEach((row) => {
-      if (row.log_date && row.log_date >= startStr && row.log_date <= todayStr) {
-        count += 1;
-        totalMinutes += Number(row.minutes) || 0;
-      }
-    });
-
-    weeklySummary.textContent = `最近 7 天：共 ${totalMinutes} 分鐘、${count} 筆`;
+    const todayStr = formatLocalDate(new Date());
+    const summary = recent7(items, todayStr);
+    weeklySummary.textContent = `最近 7 天：共 ${summary.minutes} 分鐘、${summary.count} 筆（${summary.days} 天）`;
   }
 
   function renderLogs(rows) {
